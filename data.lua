@@ -146,7 +146,7 @@ data:extend(
     inventory_size = 1,
     automated_ammo_count = 10,
     attacking_speed = 0.5,
-    movement_speed = 0.085,
+    movement_speed = 0.125,
     distance_per_frame = 0.15,
     folded_animation = 
     {

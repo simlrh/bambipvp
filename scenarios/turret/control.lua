@@ -40,18 +40,34 @@ script.on_event(defines.events.on_player_created, function(event)
   player.insert{name="burner-mining-drill", count = 1}
   player.insert{name="stone-furnace", count = 1}
   player.insert{name="bambi-turret", count = 1}
+  global.followers = player.surface.create_unit_group({position={0,0}})
+end)
+
+script.on_event(defines.events.on_tick, function(event)
+  if global.followers.valid then
+    if global.followers.state ~= defines.groupstate.attacking_distraction and global.followers.state ~= defines.groupstate.attacking_target then
+      global.followers.set_command( {type=defines.command.go_to_location,
+        destination=game.player.position,
+        radius=5.0,
+        distraction=defines.distraction.by_anything})
+    end
+  end
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
   local entity = event.created_entity
   if entity.name == "bambi-turret" then
-    entity.force = "enemy"
+    if not global.followers.valid then
+      global.followers = game.player.surface.create_unit_group({position=game.player.position})
+    end
+    global.followers.add_member(entity)
     entity.insert({name="basic-bullet-magazine", count=10})
   end
 end)
 
 script.on_init(function()
   init_attack_data()
+  global.followers = {}
 end)
 
 -- for backwards compatibility

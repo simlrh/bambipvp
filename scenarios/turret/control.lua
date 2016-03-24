@@ -39,7 +39,7 @@ script.on_event(defines.events.on_player_created, function(event)
   player.insert{name="basic-bullet-magazine", count=10}
   player.insert{name="burner-mining-drill", count = 1}
   player.insert{name="stone-furnace", count = 1}
-  player.insert{name="bambi-turret", count = 1}
+  player.insert{name="bambi-turret", count = 3}
   global.followers = player.surface.create_unit_group({position={0,0}})
 end)
 

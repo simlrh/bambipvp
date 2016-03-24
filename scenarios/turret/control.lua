@@ -1,4 +1,8 @@
 require "defines"
+require "bambiutil"
+
+pyDistance = bambiutil.pyDistance
+in_array = bambiutil.in_array
 
 normal_attack_sent_event = script.generate_event_name()
 landing_attack_sent_event = script.generate_event_name()
@@ -41,17 +45,51 @@ script.on_event(defines.events.on_player_created, function(event)
   player.insert{name="stone-furnace", count = 1}
   player.insert{name="bambi-turret", count = 3}
   global.followers = player.surface.create_unit_group({position={0,0}})
+  global.mouseover = {ticks=0, entity=nil}
 end)
 
-script.on_event(defines.events.on_tick, function(event)
-  if global.followers.valid then
-    if global.followers.state ~= defines.groupstate.attacking_distraction and global.followers.state ~= defines.groupstate.attacking_target then
-      global.followers.set_command( {type=defines.command.go_to_location,
-        destination=game.player.position,
-        radius=5.0,
-        distraction=defines.distraction.by_anything})
+script.on_event(defines.events.on_gui_click, function(event)
+  if (event.element.name == "Example_Dismiss") then
+    game.player.gui.center.Example_Frame.destroy()
+  end
+end)
+
+followme = function()
+  local followers = global.followers
+  if followers.valid then
+    local state = followers.state
+    local attack_states = {defines.groupstate.attacking_distraction, defines.groupstate.attacking_target}
+    local idle_states = {defines.groupstate.moving, defines.groupstate.gathering, defines.groupstate.finished}
+    local distance = pyDistance(followers.position, game.player.position)
+
+    game.player.print("State: "..state)
+
+    if in_array(state, idle_states) then
+      local command
+      if distance > 7.5 then
+        command = {type=defines.command.go_to_location,
+          destination=game.player.position,
+          radius=5.0,
+          distraction=defines.distraction.by_anything}
+      else 
+        command = {type=defines.command.wander,
+          distraction=defines.distraction.by_anything}
+      end
+      global.followers.set_command(command)
+    else 
+      if distance > 40 then
+        global.followers.set_command( {type=defines.command.go_to_location,
+          destination=game.player.position,
+          radius=5.0,
+          distraction=defines.distraction.none})
+      end
     end
   end
+end
+
+
+script.on_event(defines.events.on_tick, function(event)
+  followme()
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
@@ -62,6 +100,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
     global.followers.add_member(entity)
     entity.insert({name="basic-bullet-magazine", count=10})
+    entity.insert({name="car", count=1})
   end
 end)
 

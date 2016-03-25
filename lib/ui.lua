@@ -2,6 +2,8 @@ global.selectable_entities = {
   "bambi-turret",
 }
 
+global.mouseover = {ticks=0, entity=nil}
+
 select_entity = function() 
   if game.player.selected == nil then 
     global.mouseover.entity = nil

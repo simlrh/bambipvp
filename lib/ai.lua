@@ -4,9 +4,9 @@ local Unit = require("classes.Unit")
 local Squad = require("classes.Squad")
 local mydefines = require("lib.defines")
 
-local ai = {}
-
-ai.squads = {}
+local ai = {
+  squads = {}
+}
 
 script.on_event(defines.events.on_player_created, function(event)
   player = game.players[event.player_index]
@@ -20,7 +20,7 @@ end)
 ai.create_force = function(force)
   player = force.players[1]
 
-  if ai.squads[force.name] == nil then
+  if ai.squads[force.name] == nil and player ~= nil then
     ai.squads[force.name] = {
       unassigned = Squad(force)
     }
@@ -59,9 +59,18 @@ end
 
 ai.tick = function() 
   local index = (game.tick % math.max(15, #game.forces)) + 1
-  if index <= #game.forces then
-    local force = game.forces[index]
-    for name, squad in pairs(ai.squads[forcename]) do
+
+  local i = 0
+  for name, squads in pairs(ai.squads) do
+    i = i + 1
+    if i == index then
+      for name, squad in pairs(squads) do
+        squad:go()
+      end
+    end
+  end
+  if force ~= nil then
+    for name, squad in pairs(ai.squads[force.name]) do
       squad:go()
     end
   end
